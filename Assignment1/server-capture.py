@@ -16,8 +16,8 @@ def doserver():
     srv = socket.socket()
     srv.bind((host, port))
     srv.listen(19)
-    clientdata, address = srv.accept()
-    dataFromClient = clientdata.recv(1024)
+    clientconnect, address = srv.accept()
+    dataFromClient = clientconnect.recv(1024)
     print(dataFromClient.decode())
 
 if __name__ == "__main__":
