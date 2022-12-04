@@ -1,5 +1,3 @@
-
-#!/usr/bin/env python3
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 import tkinter
@@ -20,7 +18,7 @@ def send(event=None):  # event is passed by binders.
     my_msg.set("")  # Clears input field.
     client_socket.send(bytes(msg, "utf8"))
     if msg == "{quit}":
-        client_socket.close()
+        # client_socket.close()
         top.quit()
 
 
@@ -37,7 +35,7 @@ my_msg = tkinter.StringVar()  # For the messages to be sent.
 my_msg.set("")
 scrollbar = tkinter.Scrollbar(messages_frame)  # To see through previous messages.
 # this will contain the messages.
-msg_list = tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+msg_list = tkinter.Listbox(messages_frame, height=30, width=120, yscrollcommand=scrollbar.set)
 scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
 msg_list.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
 msg_list.pack()
@@ -52,7 +50,7 @@ send_button.pack()
 top.protocol("WM_DELETE_WINDOW", on_closing)
 
 #Socket part
-HOST = input('Enter host: ') # Enter host of the server without inverted commas 
+HOST = '127.0.0.1' # Enter host of the server without inverted commas 
 PORT = 33000
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
