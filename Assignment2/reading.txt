@@ -1,0 +1,14 @@
+The number of available device: 289
+Student PC	: 32*6 = 192
+Teacher PC	: (6 + 3)*5 + (4 + 3)*2 = 59 
+  Camera	: 4*7 = 28
+Admin PC	: 10
+Assume that student have 2.5 device and 5000 students in the H6
+=> 13000 devices => subnet mask is 255.255.192.0 (/18)
+
+Default gateway	: 192.168.8.1
+     DNS server	: 192.168.8.5
+    Subnet Mask	: 255.255.192.0
+       IP range	: 192.168.0.1 to 192.168.63.254	
+
+The start IP address our team use: 192.168.8.100 => 14236 devices.
