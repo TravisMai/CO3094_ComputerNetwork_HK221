@@ -18,7 +18,7 @@ def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
 
     # Request name
-    conn.send(str("Input your name (Your name won't be check for now because we don't have it yet. Please enter nicely): ").encode(FORMAT))
+    conn.send(str("Input your name (Please enter nicely): ").encode(FORMAT))
     msg_length = conn.recv(HEADER).decode(FORMAT)
     msg_length = int(msg_length)
     name = conn.recv(msg_length).decode(FORMAT)
