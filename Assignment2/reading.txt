@@ -3,12 +3,28 @@ Student PC	: 32*6 = 192
 Teacher PC	: (6 + 3)*5 + (4 + 3)*2 = 59 
   Camera	: 4*7 = 28
 Admin PC	: 10
-Assume that student have 2.5 device and 5000 students in the H6
-=> 13000 devices => subnet mask is 255.255.192.0 (/18)
+Assume that student have 2 device and 200 students per floor in the H6
+=> 400 guest devices each => We choose subnet mask is 255.255.254.0 (/23)
+Because our team divide vlan and dhcp provide ip for each floor
+We use Sub Interface to route
+Setup will be:
+server : 192.168.8.0/23
+guest 1: 192.168.10.0/23
+guest 2: 192.168.20.0/23
+guest 3: 192.168.30.0/23
+guest 4: 192.168.40.0/23
+guest 5: 192.168.50.0/23
+guest 6: 192.168.60.0/23
+guest 7: 192.168.70.0/23
+
+admin: 192.168.5.0/23
+camera: 192.168.15.0/23
+
 
 Default gateway	: 192.168.8.1
      DNS server	: 192.168.8.5
-    Subnet Mask	: 255.255.192.0
-       IP range	: 192.168.0.1 to 192.168.63.254	
+    Subnet Mask	: 255.255.224.0
+       IP range	: 192.168.0.1 to 192.168.31.254	
 
+We divide
 The start IP address our team use: 192.168.8.100 => 14236 devices.
