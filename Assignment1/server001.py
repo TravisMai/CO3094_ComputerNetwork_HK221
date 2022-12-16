@@ -15,15 +15,26 @@ server.bind(ADDR)
 listClients = []
 
 def handle_client(conn, addr):
-    print(f"[NEW CONNECTION] {addr} connected.")
 
     # Request name
-    conn.send(str("Input your name (Please enter nicely): ").encode(FORMAT))
-    msg_length = conn.recv(HEADER).decode(FORMAT)
-    msg_length = int(msg_length)
-    name = conn.recv(msg_length).decode(FORMAT)
+    while True:
+        msg_length = conn.recv(HEADER).decode(FORMAT)
+        msg_length = int(msg_length)
+        if msg_length:
+            name = conn.recv(msg_length).decode(FORMAT)
+            name = name.strip()
+            sameName = False
+            for cl in listClients:
+                if cl[0] == name:
+                    sameName = True
+                    break
+            if sameName:
+                conn.send("Name has been taken".encode(FORMAT))
+            else:
+                conn.send("Ok".encode(FORMAT))
+                break
     listClients.append((name,conn,addr))
-
+    print(f"[NEW CONNECTION] {name} connected at {addr}. Total connection: {len(listClients)}")
     # Send back address to open peer server
     conn.send(str(addr).encode(FORMAT))
 
@@ -54,9 +65,13 @@ def handle_client(conn, addr):
             # print(f"[{addr}] {msg}")
 
 
-    conn.close()
-    print(f"{addr} disconnected. Erasing from list")
 
+    for cl in listClients:
+        if cl[1] == conn:
+            listClients.remove(cl)
+            break
+    print(f'[DISCONNECTION] {name} disconnected. Total connection: {len(listClients)}')
+    conn.close()
 
 def start():
     server.listen()

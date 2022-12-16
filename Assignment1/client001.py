@@ -1,7 +1,7 @@
 import socket
+import sys
 import threading
 import time
-import os
 
 HEADER = 64
 PORT = 5050
@@ -16,6 +16,8 @@ client.connect(ADDR)
 name = ""
 connectedPeerNo = 0
 connectedPeer = []
+
+using = True
 
 def sendServer(msg):
     message = msg.encode(FORMAT)
@@ -72,11 +74,21 @@ def handle_peer(conn, addr):
         if msg_length:
             msg_length = int(msg_length)
             msg = conn.recv(msg_length).decode(FORMAT)
-            print(f'[{name_msg}]->{msg}')
             if msg == DISCONNECT_MESSAGE:
                 connected = False
 
-            # print(f"[{addr}] {msg}")
+            else:
+                print(f'[{name_msg}]->{msg}')
+
+    for cl in connectedPeer:
+        if cl[0] == name_msg:
+            cl[1].close()
+            connectedPeer.remove(cl)
+            connectedPeerNo = connectedPeerNo - 1
+            break
+
+    print(f'{name_msg} has disconnected. Total connection: {connectedPeerNo}')
+
     conn.close()
 
 def startUsing():
@@ -85,42 +97,47 @@ def startUsing():
     disconnected = False
 
     # print(f'Connected to {connectedPeerNo} peer')
-    print(f'Enter (Help) for more info')
+    print(f'Enter [help] for more info')
     while not disconnected:
         msg = input()
-        if msg.startswith("(connect)"):
-            findWho = msg[9:]
-            sendServer(findWho)
-            sMess = client.recv(2048).decode(FORMAT)
-            if sMess == "Peer found":
-                connectAddr = client.recv(2048).decode(FORMAT)
-                haddr, paddr = connectAddr[1:-1].split(", ")
-                cAddress = (haddr[1:-1], int(paddr))
-                newPeer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                newPeer.connect(cAddress)
-                global name
-                sendPeer(newPeer, name)
-                # connectedPeer.append((findWho,newPeer,cAddress))
-                # connectedPeerNo = connectedPeerNo + 1
-                # print(f'Connected to {connectedPeerNo} peer')
-        elif msg.startswith("(disconnect)"):
+        socketSendingPeer = []
+        if msg.startswith("[connect]"):
+            findWho = msg[9:].strip()
+            global name
+            if findWho == name:
+                print("It's you")
+            else:
+                already = False
+                for cl in connectedPeer:
+                    if cl[0] == findWho:
+                        already = True
+                        break
+                if already:
+                    print(f'You are already connected with {findWho}')
+                else:
+                    sendServer(findWho)
+                    sMess = client.recv(2048).decode(FORMAT)
+                    if sMess == "Peer found":
+                        connectAddr = client.recv(2048).decode(FORMAT)
+                        haddr, paddr = connectAddr[1:-1].split(", ")
+                        cAddress = (haddr[1:-1], int(paddr))
+                        newPeer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        newPeer.connect(cAddress)
+                        sendPeer(newPeer, name)
+                        socketSendingPeer.append(newPeer)
+                    else:
+                        print(sMess)
+        elif msg.startswith("[disconnect]"):
             disconnected = True
             sendServer(DISCONNECT_MESSAGE)
-            print("Will be broadcast to every connected friend")
-
-
-
-            for peer in connectedPeer:
-                sendPeer(peer[1],'disconnected')
-            os._exit()
-
-
-
-
-        elif msg.startswith("(Help)"):
-            print("Enter (connect)<name> to find peer (no space pls)")
+            print("Thank you for using")
+            for cl in connectedPeer:
+                sendPeer(cl[1],DISCONNECT_MESSAGE)
+                cl[1].close()
+        elif msg.startswith("[help]"):
+            print("Enter [connect]<name> to find peer")
             print("Enter (<name>)<message> to send message to peer")
-            print("Enter (disconnect) to exit")
+            print("Enter [disconnect] to exit")
         elif msg.startswith("(") and msg.__contains__(")"): # Chat to peer
             if connectedPeerNo <=0:
                 print("You don't have any connected peer")
@@ -135,13 +152,20 @@ def startUsing():
                         pafound = cl
                         break
                 if pfound:
-                    sendMess = msg[nameStart+1:]
+                    sendMess = msg[nameStart+1:].strip()
                     sendPeer(pafound[1],sendMess)
                 else:
                     print(f'Not found connected peer name {pname}')
         else:
             print("Invalid command")
-    print("You are disconnected! Cannot stop the process now pls help")
+
+    for sk in socketSendingPeer:
+        sk.close()
+
+    global using
+    using = False
+
+    print("You are disconnected! Cannot stop the server process now pls help")
 
 
 def startListen(hAddr, pAddr):
@@ -157,12 +181,17 @@ def startListen(hAddr, pAddr):
 
 
 def setUp():
-    print(client.recv(2048).decode(FORMAT))
 
     # Input name
-    global name
-    name = input()
-    sendServer(name)
+    while True:
+        global name
+        name = input("Input your name: ")
+        sendServer(name)
+        sMess = client.recv(2048).decode(FORMAT)
+        if sMess != "Name has been taken":
+            break
+        else:
+            print(sMess)
 
     # Receive address
     inaddr = client.recv(2048).decode(FORMAT)
@@ -170,8 +199,10 @@ def setUp():
     haddr = haddr[1:-1]
     paddr = int(paddr)
     oAddr = (haddr,paddr)
+
     openSocket = threading.Thread(target=startListen, args=oAddr)
     openSocket.start()
+
     startUse = threading.Thread(target=startUsing())
     startUse.start()
 
