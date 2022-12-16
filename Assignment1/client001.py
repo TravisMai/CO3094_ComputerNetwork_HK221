@@ -1,4 +1,5 @@
 import socket
+import sys
 import threading
 import time
 
@@ -84,28 +85,39 @@ def startUsing():
     disconnected = False
 
     # print(f'Connected to {connectedPeerNo} peer')
-    print(f'Enter (Help) for more info')
+    print(f'Enter [Help] for more info')
     while not disconnected:
         msg = input()
         if msg.startswith("(connect)"):
             findWho = msg[9:]
-            sendServer(findWho)
-            sMess = client.recv(2048).decode(FORMAT)
-            if sMess == "Peer found":
-                connectAddr = client.recv(2048).decode(FORMAT)
-                haddr, paddr = connectAddr[1:-1].split(", ")
-                cAddress = (haddr[1:-1], int(paddr))
-                newPeer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                newPeer.connect(cAddress)
-                global name
-                sendPeer(newPeer, name)
-                # connectedPeer.append((findWho,newPeer,cAddress))
-                # connectedPeerNo = connectedPeerNo + 1
-                # print(f'Connected to {connectedPeerNo} peer')
+            already = False
+            for cl in connectedPeer:
+                if cl[0] == findWho:
+                    already = True
+                    break
+            if already:
+                print(f'You are already connected with {findWho}')
+            else:
+                sendServer(findWho)
+                sMess = client.recv(2048).decode(FORMAT)
+                if sMess == "Peer found":
+                    connectAddr = client.recv(2048).decode(FORMAT)
+                    haddr, paddr = connectAddr[1:-1].split(", ")
+                    cAddress = (haddr[1:-1], int(paddr))
+                    newPeer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    newPeer.connect(cAddress)
+                    global name
+                    sendPeer(newPeer, name)
+                    # connectedPeer.append((findWho,newPeer,cAddress))
+                    # connectedPeerNo = connectedPeerNo + 1
+                    # print(f'Connected to {connectedPeerNo} peer')
+                else:
+                    print(sMess)
         elif msg.startswith("(disconnect)"):
             disconnected = True
             sendServer(DISCONNECT_MESSAGE)
             print("Will be broadcast to every connected friend")
+            exit()
         elif msg.startswith("(Help)"):
             print("Enter (connect)<name> to find peer (no space pls)")
             print("Enter (<name>)<message> to send message to peer")
