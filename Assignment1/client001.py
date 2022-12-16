@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import os
 
 HEADER = 64
 PORT = 5050
@@ -106,6 +107,16 @@ def startUsing():
             disconnected = True
             sendServer(DISCONNECT_MESSAGE)
             print("Will be broadcast to every connected friend")
+
+
+
+            for peer in connectedPeer:
+                sendPeer(peer[1],'disconnected')
+            os._exit()
+
+
+
+
         elif msg.startswith("(Help)"):
             print("Enter (connect)<name> to find peer (no space pls)")
             print("Enter (<name>)<message> to send message to peer")

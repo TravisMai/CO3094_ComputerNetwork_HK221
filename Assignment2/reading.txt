@@ -23,8 +23,4 @@ camera: 192.168.15.0/23
 
 Default gateway	: 192.168.8.1
      DNS server	: 192.168.8.5
-    Subnet Mask	: 255.255.224.0
-       IP range	: 192.168.0.1 to 192.168.31.254	
-
-We divide
-The start IP address our team use: 192.168.8.100 => 14236 devices.
+    Subnet Mask	: 255.255.254.0
