@@ -68,17 +68,20 @@ def handle_peer(conn, addr):
         connectedPeerNo = connectedPeerNo +1
         print(f"Connected with {name_msg}. Total connection: {connectedPeerNo}")
 
+    conn.settimeout(0.2)
     connected = True
-    while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            msg = conn.recv(msg_length).decode(FORMAT)
-            if msg == DISCONNECT_MESSAGE:
-                connected = False
-
-            else:
-                print(f'[{name_msg}]->{msg}')
+    while connected and using:
+        try:
+            msg_length = conn.recv(HEADER).decode(FORMAT)
+            if msg_length:
+                msg_length = int(msg_length)
+                msg = conn.recv(msg_length).decode(FORMAT)
+                if msg == DISCONNECT_MESSAGE:
+                    connected = False
+                else:
+                    print(f'[{name_msg}]->{msg}')
+        except:
+            pass
 
     for cl in connectedPeer:
         if cl[0] == name_msg:
@@ -88,8 +91,8 @@ def handle_peer(conn, addr):
             break
 
     print(f'{name_msg} has disconnected. Total connection: {connectedPeerNo}')
-
     conn.close()
+    return
 
 def startUsing():
     global connectedPeerNo
@@ -130,7 +133,6 @@ def startUsing():
         elif msg.startswith("[disconnect]"):
             disconnected = True
             sendServer(DISCONNECT_MESSAGE)
-            print("Thank you for using")
             for cl in connectedPeer:
                 sendPeer(cl[1],DISCONNECT_MESSAGE)
                 cl[1].close()
@@ -164,21 +166,24 @@ def startUsing():
 
     global using
     using = False
-
-    print("You are disconnected! Cannot stop the server process now pls help")
-
+    return
 
 def startListen(hAddr, pAddr):
     pServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     peeraddr = (hAddr, pAddr)
     pServer.bind(peeraddr)
     pServer.listen()
+    pServer.settimeout(0.2)
     print(f"[LISTENING] You are is listening on {peeraddr}")
-    while True:
-        conn, addr = pServer.accept()
-        thread = threading.Thread(target=handle_peer, args=(conn, addr))
-        thread.start()
-
+    while using:
+        try:
+            conn, addr = pServer.accept()
+            thread = threading.Thread(target=handle_peer, args=(conn, addr))
+            thread.start()
+        except:
+            pass
+    pServer.close()
+    return
 
 def setUp():
 
@@ -205,6 +210,17 @@ def setUp():
 
     startUse = threading.Thread(target=startUsing())
     startUse.start()
+    return
 
 print("[Starting] Client is starting...")
 setUp()
+client.close()
+print("Thank you for using")
+
+# while using:
+#     print("Using")
+#     time.sleep(1)
+#     if not using:
+#         client.close()
+#         print("Stopping")
+#         exit()
